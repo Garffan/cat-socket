@@ -1,0 +1,138 @@
+<!--<link rel="import" href="../polymer/polymer.html">-->
+<!--<script src="../socket.io-client/socket.io.js"></script>-->
+<link rel="import" href="bower_components/polymer/polymer.html">
+<script src="bower_components/socket.io-client/socket.io.js"></script>
+
+<polymer-element name="cat-socket" attributes="url auto" constructor="CatSocket">
+    <script>
+        (function () {
+
+            var io = null;
+            Polymer('cat-socket', {
+                url: '',
+                auto: true,
+                socket: null,
+                get connected() {
+                    return this.socket !== null;
+                },
+
+                ready: function () {
+                    if (this.auto) {
+                        this.connect();
+                    }
+                },
+
+                connect: function () {
+                    if (!this.connected) {
+                        this._connect = new Promise(function (resolve, reject) {
+
+                            this.socket = io.connect(this.url);
+
+                            this.socket.on('connect', this.fireEvent('socket-connect'));
+                            this.socket.on('connect_error', this.fireEvent('socket-error'));
+                            this.socket.on('connect_timeout', this.fireEvent('socket-timeout'));
+
+                            io = this.socket;
+                            resolve(this.socket);
+
+                        }.bind(this));
+                    }
+                    return this._connect;
+                },
+
+                fireEvent: function (name) {
+                    return function () {
+                        this.fire(name);
+                    }.bind(this);
+                },
+
+                detached: function () {
+                    if (this.connected) {
+                        this.socket.destory();
+                    }
+                }
+
+            });
+        })()
+    </script>
+</polymer-element>
+
+<polymer-element name="cat-socket-base">
+    <script>
+        Polymer('cat-socket-base', {
+
+            domReady: function () {
+                if (this.io !== null) {
+                    this.connect().then(this.connected.bind(this));
+                } else {
+                    console.warn(this.nodeName + " must be in the same container with the <cat-socket></cat-socket>");
+                }
+            },
+
+            connect: function () {
+                return this.parentNode.connect();
+            },
+
+            get socket() {
+                return this.parentNode.socket;
+            }
+
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="cat-socket-emit" attributes="event eventLocal value auto initial" extends="socket-base">
+    <script>
+        Polymer('cat-socket-emit', {
+            value: null,
+            auto: false,
+            initial: false,
+            observe: {
+                value: 'connected'
+            },
+
+            ready: function () {
+                this.super();
+                if (this.initial) {
+                    this.connect().then(this.emit.bind(this));
+                }
+            },
+
+            connected: function () {
+                if (this.auto && ( !!this.value )) {
+                    this.emit();
+                }
+            },
+            emit: function () {
+                var self = this;
+                if (this.event !== null) {
+                    this.socket.emit(this.event, this.value, function(data) {
+                        self.fire('answered-data', data);
+                    });
+
+                    if (this.eventLocal !== null) {
+                        this.fire(this.eventLocal, this.value);
+                    }
+                }
+            }
+        });
+    </script>
+</polymer-element>
+
+<polymer-element name="cat-socket-on" attributes="event data" extends="socket-base">
+    <script>
+        Polymer('cat-socket-on', {
+            data: null,
+            connected: function () {
+                this.socket.on(this.event, function (data) {
+                    this.data = data;
+                    this.fire('received-data', data);
+                }.bind(this));
+            },
+
+            detached: function () {
+                this.socket.off(this.event);
+            }
+        });
+    </script>
+</polymer-element>
