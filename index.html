@@ -2,11 +2,33 @@
 <html>
 <head>
 
-  <script src="../platform/platform.js"></script>
+  <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="bower_components/polymer/polymer.html">
+  <link rel="import" href="cat-socket.html">
 
 </head>
 <body unresolved>
 
+<template is="auto-binding" id="app" noscript>
+  <h1>received-data from cat-socket-on</h1>
+  <h2>{{date}}</h2>
+  <h1>answered-data from cat-socket-emit</h1>
+  <h2>{{var1}}</h2>
+  <cat-socket-emit event="serverDate" value="1111111"></cat-socket-emit>
+  <cat-socket-emit event="serverDate2" value="2222222"></cat-socket-emit>
+  <cat-socket-emit event="serverDate3" value="3333333"></cat-socket-emit>
+  <cat-socket-on event="serverDate" data="{{date}}"></cat-socket-on>
+</template>
+<script>
+  app.addEventListener('template-bound', function() {
+    console.log('Our app is ready to rock!');
+    var catSocketEmit = document.querySelector('cat-socket-emit');
+    catSocketEmit.addEventListener('answered-data', function(data) {
+      console.log('aaaaaaaaaaaa', data.detail);
+      this.var1 = data.detail;
+    }.bind(this));
+  });
+
+</script>
 </body>
 </html>
