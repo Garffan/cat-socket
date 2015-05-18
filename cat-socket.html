@@ -1,14 +1,14 @@
-<!--<link rel="import" href="../polymer/polymer.html">-->
-<!--<script src="../socket.io-client/socket.io.js"></script>-->
-<link rel="import" href="bower_components/polymer/polymer.html">
-<script src="bower_components/socket.io-client/socket.io.js"></script>
+<link rel="import" href="../polymer/polymer.html">
+<script src="../socket.io-client/socket.io.js"></script>
+<!--<link rel="import" href="bower_components/polymer/polymer.html"> &lt;!&ndash;NEEDS FOR TESTING WITH "node-test-app/app.js" and "index.html"&ndash;&gt;-->
+<!--<script src="bower_components/socket.io-client/socket.io.js"></script> &lt;!&ndash;NEEDS FOR TESTING WITH "node-test-app/app.js" and "index.html"&ndash;&gt;-->
 
 <polymer-element name="cat-socket" attributes="url auto" constructor="CatSocket">
     <script>
         (function () {
 
-            var io = null;
-            Polymer('cat-socket', {
+            var url = null;
+            Polymer({
                 url: '',
                 auto: true,
                 socket: null,
@@ -17,7 +17,7 @@
                 },
 
                 ready: function () {
-                    if (this.auto) {
+                    if (!this.connected) {
                         this.connect();
                     }
                 },
@@ -26,13 +26,13 @@
                     if (!this.connected) {
                         this._connect = new Promise(function (resolve, reject) {
 
-                            this.socket = io.connect(this.url);
+                            this.socket = io.connect(this.url || url);
 
                             this.socket.on('connect', this.fireEvent('socket-connect'));
                             this.socket.on('connect_error', this.fireEvent('socket-error'));
                             this.socket.on('connect_timeout', this.fireEvent('socket-timeout'));
 
-                            io = this.socket;
+                            url = url || this.url;
                             resolve(this.socket);
 
                         }.bind(this));
@@ -58,11 +58,14 @@
 </polymer-element>
 
 <polymer-element name="cat-socket-base">
+    <template>
+        <cat-socket id="socket"></cat-socket>
+    </template>
     <script>
-        Polymer('cat-socket-base', {
+        Polymer({
 
             domReady: function () {
-                if (this.io !== null) {
+                if (this.$.socket.connected) {
                     this.connect().then(this.connected.bind(this));
                 } else {
                     console.warn(this.nodeName + " must be in the same container with the <cat-socket></cat-socket>");
@@ -70,23 +73,23 @@
             },
 
             connect: function () {
-                return this.parentNode.connect();
+                return this.$.socket.connect();
             },
 
             get socket() {
-                return this.parentNode.socket;
+                return this.$.socket.socket;
             }
 
         });
     </script>
 </polymer-element>
 
-<polymer-element name="cat-socket-emit" attributes="event eventLocal value auto initial" extends="socket-base">
+<polymer-element name="cat-socket-emit" attributes="event eventLocal value auto initial callback data" extends="cat-socket-base">
     <script>
-        Polymer('cat-socket-emit', {
+        Polymer({
             value: null,
             auto: false,
-            initial: false,
+            initial: true,
             observe: {
                 value: 'connected'
             },
@@ -104,11 +107,15 @@
                 }
             },
             emit: function () {
-                var self = this;
                 if (this.event !== null) {
-                    this.socket.emit(this.event, this.value, function(data) {
-                        self.fire('answered-data', data);
-                    });
+                    console.log(this.value);
+                    this.socket.emit(this.event, this.value, function (data) {
+                        if(this.callback)
+                            this.callback(data);
+                        if(this.data)
+                            this.data = data;
+                        this.fire('answered-data', data);
+                    }.bind(this));
 
                     if (this.eventLocal !== null) {
                         this.fire(this.eventLocal, this.value);
@@ -119,7 +126,7 @@
     </script>
 </polymer-element>
 
-<polymer-element name="cat-socket-on" attributes="event data" extends="socket-base">
+<polymer-element name="cat-socket-on" attributes="event data" extends="cat-socket-base">
     <script>
         Polymer('cat-socket-on', {
             data: null,

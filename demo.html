@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+
+  <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="bower_components/polymer/polymer.html">
+  <link rel="import" href="cat-socket.html">
+
+</head>
+<body unresolved>
+
+<template is="auto-binding" id="app" noscript>
+  <h1>received-data from cat-socket-on</h1>
+  <h2>{{date}}</h2>
+  <h1>answered-data from cat-socket-emit</h1>
+  <h2>{{var1}}</h2>
+  <h2>{{var2}}</h2>
+
+  <cat-socket id="socket" url="localhost:3002"></cat-socket>
+  <cat-socket-on event="serverDate" data="{{var1}}"></cat-socket-on>
+
+</template>
+<script>
+  var app = document.querySelector('#app');
+
+
+  app.addEventListener('template-bound', function() {
+
+    console.log('Our app is ready to rock!');
+
+  });
+
+</script>
+</body>
+</html>

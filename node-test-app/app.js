@@ -7,16 +7,24 @@ var app = http.createServer();
 var io = require('socket.io').listen(app);
 
 io.on('connection', function(socket) {
-  console.log('connected!');
-  socket.emit('getUserName', '12333');
 
-  var userName = 'lol';
+  console.log('connected');
   setInterval(function () {
-    socket.emit('getUserName', userName + ' ' + new Date());
+    socket.emit('serverDate', new Date());
+  }, 1000);
+  socket.on('serverDate', function (data, cb) {
+    console.log(data);
+    cb('11111111answer');
   });
-  socket.on('getUserName', function (data, cb) {
-    cb(12333);
+  socket.on('serverDate2', function (data, cb) {
+    console.log(data);
+    cb('22222222answer');
   });
+  socket.on('serverDate3', function (data, cb) {
+    console.log(data);
+    cb('33333333answer');
+  });
+
 });
 
 app.listen(3002);
