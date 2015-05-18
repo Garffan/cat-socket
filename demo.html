@@ -14,19 +14,20 @@
   <h2>{{date}}</h2>
   <h1>answered-data from cat-socket-emit</h1>
   <h2>{{var1}}</h2>
-  <cat-socket-emit event="serverDate" value="1111111"></cat-socket-emit>
-  <cat-socket-emit event="serverDate2" value="2222222"></cat-socket-emit>
-  <cat-socket-emit event="serverDate3" value="3333333"></cat-socket-emit>
-  <cat-socket-on event="serverDate" data="{{date}}"></cat-socket-on>
+  <h2>{{var2}}</h2>
+
+  <cat-socket id="socket" url="localhost:3002"></cat-socket>
+  <cat-socket-on event="serverDate" data="{{var1}}"></cat-socket-on>
+
 </template>
 <script>
+  var app = document.querySelector('#app');
+
+
   app.addEventListener('template-bound', function() {
+
     console.log('Our app is ready to rock!');
-    var catSocketEmit = document.querySelector('cat-socket-emit');
-    catSocketEmit.addEventListener('answered-data', function(data) {
-      console.log('aaaaaaaaaaaa', data.detail);
-      this.var1 = data.detail;
-    }.bind(this));
+
   });
 
 </script>
