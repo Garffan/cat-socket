@@ -125,13 +125,16 @@
     </script>
 </polymer-element>
 
-<polymer-element name="cat-socket-on" attributes="event data" extends="cat-socket-base">
+<polymer-element name="cat-socket-on" attributes="event data callback" extends="cat-socket-base">
     <script>
         Polymer('cat-socket-on', {
             data: null,
             connected: function () {
                 this.socket.on(this.event, function (data) {
-                    this.data = data;
+                    if (this.callback)
+                        this.callback(data);
+                    if (this.data)
+                        this.data = data;
                     this.fire('received-data', data);
                 }.bind(this));
             },

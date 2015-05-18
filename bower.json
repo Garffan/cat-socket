@@ -1,7 +1,7 @@
 {
   "name": "cat-socket",
   "license" : "MIT",
-  "version" : "0.0.2",
+  "version" : "0.0.4",
   "authors": [
     "Michael Skvortsov <m.m.skvortsov@gmail.com>"
   ],
