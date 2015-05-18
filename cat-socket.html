@@ -108,7 +108,6 @@
             },
             emit: function () {
                 if (this.event !== null) {
-                    console.log(this.value);
                     this.socket.emit(this.event, this.value, function (data) {
                         if(this.callback)
                             this.callback(data);
